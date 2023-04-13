@@ -46,12 +46,12 @@ func (n *node) generateHandler(msg maelstrom.Message) error {
 }
 
 func (n *node) broadcastHandler(msg maelstrom.Message) error {
-	n.idsMutex.Lock()
-	defer n.idsMutex.Unlock()
 	var body map[string]any
 	if err := json.Unmarshal(msg.Body, &body); err != nil {
 		return err
 	}
+	n.idsMutex.Lock()
+	defer n.idsMutex.Unlock()
 	body["type"] = "broadcast_ok"
 	id := body["message"].(float64)
 	n.ids = append(n.ids, int(id))
@@ -60,12 +60,12 @@ func (n *node) broadcastHandler(msg maelstrom.Message) error {
 }
 
 func (n *node) readHandler(msg maelstrom.Message) error {
-	n.idsMutex.RLock()
-	defer n.idsMutex.RUnlock()
 	var body map[string]any
 	if err := json.Unmarshal(msg.Body, &body); err != nil {
 		return err
 	}
+	n.idsMutex.RLock()
+	defer n.idsMutex.RUnlock()
 	body["type"] = "read_ok"
 	body["messages"] = n.ids
 	return n.Node.Reply(msg, body)
